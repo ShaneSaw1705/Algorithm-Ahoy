@@ -5,6 +5,7 @@ import init, { GameState } from "@/public/wasm/wasm";
 
 export default function Home() {
 	const [board, setBoard] = useState<GameState>();
+	const [code, setCode] = useState<string>('# code');
 
 	useEffect(() => {
 		const initilize = async () => {
@@ -18,13 +19,14 @@ export default function Home() {
 		<div className="flex h-screen bg-slate-300">
 			<div className="flex flex-col flex-grow">
 				<div className="flex flex-row gap-2 p-2">
-					<button className="bg-green-500 text-white px-4 py-2" onClick={() => console.log(board?.get_board())}>Run Code</button>
+					<button className="bg-green-500 text-white px-4 py-2" onClick={() => console.log(code)}>Run Code</button>
 					<button className="bg-blue-500 text-white px-4 py-2">Help?</button>
 				</div>
 				<Editor
 					className="flex-grow"
 					defaultLanguage="python"
-					defaultValue="# code"
+					value={code}
+					onChange={(value) => setCode(value || '')}
 				/>
 			</div>
 			<div className="bg-slate-300 flex items-center justify-center text-black p-2">
