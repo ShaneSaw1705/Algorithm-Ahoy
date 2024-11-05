@@ -2,12 +2,12 @@
 import { Editor } from "@monaco-editor/react";
 import { Key, useEffect, useState } from "react";
 import init, { GameState } from "@/public/wasm/wasm";
-import { run_code } from "@/public/wasm/wasm";
-import { toast } from "sonner";
+import { jsPython } from "jspython-interpreter";
 
 export default function Home() {
 	const [board, setBoard] = useState<GameState>();
 	const [code, setCode] = useState<string>('# code');
+	const [isRunning, setIsRunning] = useState(false);
 
 	useEffect(() => {
 		const initilize = async () => {
@@ -18,14 +18,18 @@ export default function Home() {
 	}, []);
 
 	const handleRunCode = () => {
-		try {
-			const result = run_code(code);
-			toast(result)
-			console.log(result)
-		} catch (e) {
-			console.error(e)
-		}
-	}
+		if (isRunning) return;
+		setIsRunning(true);
+		jsPython()
+			.addFunction('get_board', () => board?.get_board())
+			.evaluate(code)
+			.catch(error => {
+				console.error("Error => ", error);
+			})
+			.finally(() => {
+				setIsRunning(false);
+			});
+	};
 
 	return (
 		<div className="flex h-screen bg-slate-300">
