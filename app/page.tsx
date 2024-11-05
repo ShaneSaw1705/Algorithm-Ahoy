@@ -22,6 +22,7 @@ export default function Home() {
 		setIsRunning(true);
 		jsPython()
 			.addFunction('get_board', () => board?.get_board())
+			.addFunction('move_forward', () => board?.move_forward())
 			.evaluate(code)
 			.catch(error => {
 				console.error("Error => ", error);
