@@ -3,11 +3,11 @@ import { Editor } from "@monaco-editor/react";
 import { Key, useEffect, useState } from "react";
 import init, { GameState } from "@/public/wasm/wasm";
 import { run_code } from "@/public/wasm/wasm";
+import { toast } from "sonner";
 
 export default function Home() {
 	const [board, setBoard] = useState<GameState>();
 	const [code, setCode] = useState<string>('# code');
-	const [codeOutput, setCodeOutput] = useState<string>('');
 
 	useEffect(() => {
 		const initilize = async () => {
@@ -20,7 +20,7 @@ export default function Home() {
 	const handleRunCode = () => {
 		try {
 			const result = run_code(code);
-			setCodeOutput(result);
+			toast(result)
 			console.log(result)
 		} catch (e) {
 			console.error(e)
@@ -33,7 +33,6 @@ export default function Home() {
 				<div className="flex flex-row gap-2 p-2">
 					<button className="bg-green-500 text-white px-4 py-2" onClick={handleRunCode}>Run Code</button>
 					<button className="bg-blue-500 text-white px-4 py-2">Help?</button>
-					<p className="text-black">{codeOutput}</p>
 				</div>
 				<Editor
 					defaultLanguage="python"
