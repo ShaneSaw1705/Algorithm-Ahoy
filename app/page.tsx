@@ -23,6 +23,7 @@ export default function Home() {
 		jsPython()
 			.addFunction('get_board', () => board?.get_board())
 			.addFunction('move_forward', () => board?.move_forward())
+			.addFunction('turn', (direction: unknown) => board?.turn(direction as string))
 			.evaluate(code)
 			.catch(error => {
 				console.error("Error => ", error);
