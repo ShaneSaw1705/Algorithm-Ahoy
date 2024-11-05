@@ -2,10 +2,12 @@
 import { Editor } from "@monaco-editor/react";
 import { Key, useEffect, useState } from "react";
 import init, { GameState } from "@/public/wasm/wasm";
+import { run_code } from "@/public/wasm/wasm";
 
 export default function Home() {
 	const [board, setBoard] = useState<GameState>();
 	const [code, setCode] = useState<string>('# code');
+	const [codeOutput, setCodeOutput] = useState<string>('');
 
 	useEffect(() => {
 		const initilize = async () => {
@@ -15,35 +17,47 @@ export default function Home() {
 		initilize();
 	}, []);
 
+	const handleRunCode = () => {
+		try {
+			const result = run_code(code);
+			setCodeOutput(result);
+			console.log(result)
+		} catch (e) {
+			console.error(e)
+		}
+	}
+
 	return (
 		<div className="flex h-screen bg-slate-300">
 			<div className="flex flex-col flex-grow">
 				<div className="flex flex-row gap-2 p-2">
-					<button className="bg-green-500 text-white px-4 py-2" onClick={() => console.log(code)}>Run Code</button>
+					<button className="bg-green-500 text-white px-4 py-2" onClick={handleRunCode}>Run Code</button>
 					<button className="bg-blue-500 text-white px-4 py-2">Help?</button>
+					<p className="text-black">{codeOutput}</p>
 				</div>
 				<Editor
-					className="flex-grow"
 					defaultLanguage="python"
 					value={code}
 					onChange={(value) => setCode(value || '')}
 				/>
 			</div>
-			<div className="bg-slate-300 flex items-center justify-center text-black p-2">
-				<div className="w-full h-full flex flex-col justify-center items-center">
-					{board && board.get_board().map((row, rowIndex) => (
-						<div key={rowIndex} className="flex">
-							{row.map((cell: string, colIndex: Key) => (
-								<div
-									key={colIndex}
-									className={`w-8 h-8 border ${cell === 'X' ? 'bg-blue-500' : 'bg-white'}`}
-								>
-								</div>
-							))}
-						</div>
-					))}
-					<div className="w-full h-full text-black">console</div>
+			<div className="flex flex-col w-1/2 bg-slate-300 p-2">
+				<div className="flex-grow flex items-center justify-center text-black">
+					<div className="w-full h-full flex flex-col justify-center items-center">
+						{board && board.get_board().map((row, rowIndex) => (
+							<div key={rowIndex} className="flex">
+								{row.map((cell: string, colIndex: Key) => (
+									<div
+										key={colIndex}
+										className={`w-8 h-8 border ${cell === 'X' ? 'bg-blue-500' : 'bg-white'}`}
+									>
+									</div>
+								))}
+							</div>
+						))}
+					</div>
 				</div>
+				<div className="w-full h-full text-black">console</div>
 			</div>
 		</div>
 	);
