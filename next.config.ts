@@ -1,15 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const nextConfig = {
+import path from "path";
+
+/** @type {import('next').NextConfig} */
+const nextConfig: import('next').NextConfig = {
 	webpack: (config: any) => {
 		config.experiments = {
 			...config.experiments,
 			asyncWebAssembly: true,
-			layers: true,
 		};
 
-		config.output = {
-			...config.output,
-			webassemblyModuleFilename: 'static/wasm/[modulehash].wasm'
+		// Important: This allows importing wasm files directly
+		config.resolve.alias = {
+			...config.resolve.alias,
+			'@wasm': path.resolve(__dirname, '/wasm'),
 		};
 
 		return config;

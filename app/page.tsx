@@ -10,7 +10,7 @@ const starterCode = `# Write your python code here
 # move_forward() -> moves the player
 # turn("left" or "right") -> turns the player
 # get_neighbour('north') -> Returns either 'wall', 'coin' or 'space'`;
-let wasmModule: typeof import("@/public/wasm/wasm") | null = null;
+let wasmModule: typeof import("@/wasm/wasm") | null = null;
 
 export default function Home() {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,7 +23,7 @@ export default function Home() {
 
 	useEffect(() => {
 		const initilize = async () => {
-			wasmModule = await import("@/public/wasm/wasm");
+			wasmModule = await import("@/wasm/wasm");
 			await wasmModule.default();
 			setBoard(wasmModule.GameState.new(9));
 		}
