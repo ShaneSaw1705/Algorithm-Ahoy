@@ -12,11 +12,6 @@ const starterCode = `# Write your python code here
 # turn("left" or "right") -> turns the player
 # get_neighbour('north') -> returns the neighbouring cells`;
 
-type QueuedCommand = {
-	type: 'move' | 'turn';
-	direction?: string;
-};
-
 export default function Home() {
 	const [board, setBoard] = useState<GameState>();
 	const [code, setCode] = useState<string>(starterCode);
@@ -33,58 +28,40 @@ export default function Home() {
 		initilize();
 	}, []);
 
-	const executeQueuedCommands = async (commands: QueuedCommand[]) => {
-		for (const command of commands) {
-			await new Promise(resolve => setTimeout(resolve, 500));
-
-			if (command.type === 'move') {
-				board?.move_forward();
-			} else if (command.type === 'turn') {
-				board?.turn(command.direction || '');
-			}
-
-			setRerender(prev => prev + 1);
-		}
-
-		const coinCount = board?.get_coin_count();
-		if (coinCount === 0) {
-			toast.success('You have won the game');
-			handleLoadLevel(level + 1);
-			setLevel(level + 1);
-		}
-		setIsRunning(false);
-	};
+	const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 	const handleRunCode = () => {
 		if (isRunning) return;
 		setIsRunning(true);
 
-		// Local queue to store commands while code is being evaluated
-		const commandQueue: QueuedCommand[] = [];
-
-		// Add move functions to the interpreter
-		const queuedMove = () => {
-			commandQueue.push({ type: 'move' });
-		};
-
-		const queuedTurn = (direction: unknown) => {
-			commandQueue.push({ type: 'turn', direction: direction as string });
-		};
-
 		jsPython()
 			.addFunction('get_board', () => board?.get_board())
-			.addFunction('move_forward', queuedMove)
-			.addFunction('turn', queuedTurn)
+			.addFunction('move_forward', async () => {
+				board?.move_forward();
+				setRerender(prev => prev + 1);
+				await sleep(500)
+			})
+			.addFunction('turn', async (direction: unknown) => {
+				board?.turn(direction as string);
+				setRerender(prev => prev + 1);
+				await sleep(500)
+			})
 			.addFunction('get_neighbour', (direction: unknown) => board?.get_neighbour(direction as string))
 			.addFunction('get_neighbours', () => board?.get_neighbouring_cells())
 			.evaluate(code)
 			.then(() => {
-				// Execute the local queue immediately after code evaluation
-				executeQueuedCommands(commandQueue);
+				const coinCount = board?.get_coin_count();
+				if (coinCount === 0) {
+					toast.success('You have won the game');
+					handleLoadLevel(level + 1);
+					setLevel(level + 1);
+				}
 			})
 			.catch(error => {
 				console.error("Error => ", error);
 				toast.error('An error occurred while running the code');
+			})
+			.finally(() => {
 				setIsRunning(false);
 			});
 	};
