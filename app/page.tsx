@@ -10,7 +10,7 @@ const starterCode = `# Write your python code here
 # get_board() -> returns the current board
 # move_forward() -> moves the player
 # turn("left" or "right") -> turns the player
-# get_neighbour('north') -> returns the neighbouring cells`;
+# get_neighbour('north') -> Returns either 'wall', 'coin' or 'space'`;
 
 export default function Home() {
 	const [board, setBoard] = useState<GameState>();
