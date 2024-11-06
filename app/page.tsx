@@ -9,7 +9,7 @@ const starterCode = `# Write your python code here
 # get_board() -> returns the current board
 # move_forward() -> moves the player
 # turn("left" or "right") -> turns the player
-# get_neighbour('north') -> Returns either 'wall', 'coin' or 'space'`;
+# get_neighbour("north", "south", "east", "west", "facing") -> Returns either 'wall', 'coin' or 'space'`;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 //
 export default function Home() {
@@ -19,7 +19,7 @@ export default function Home() {
 	const [isRunning, setIsRunning] = useState(false);
 	const [rerender, setRerender] = useState(0);
 	const [dialoge, setDialoge] = useState<string>('Take your time to learn the basics of the api; your goal is to collect all the coins in each level');
-	const [level, setLevel] = useState(0);
+	const [level, setLevel] = useState(1);
 
 	useEffect(() => {
 		const initilize = async () => {
@@ -55,8 +55,10 @@ export default function Home() {
 				const coinCount = board?.get_coin_count();
 				if (coinCount === 0) {
 					toast.success('You have won the game');
-					handleLoadLevel(level + 1);
+					handleLoadLevel(level);
 					setLevel(level + 1);
+				} else {
+					handleLoadLevel(level - 1);
 				}
 			})
 			.catch(error => {
@@ -67,6 +69,16 @@ export default function Home() {
 				setIsRunning(false);
 			});
 	};
+
+	const handleReset = () => {
+		setLevel(level)
+		setRerender(rerender + 1);
+	}
+
+	const handleSkipLevel = () => {
+		handleLoadLevel(level);
+		setLevel(level + 1);
+	}
 
 	const handleLoadLevel = (level: number) => {
 		const dialoge = board?.load_level(level);
@@ -93,9 +105,15 @@ export default function Home() {
 					</button>
 					<button
 						className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-						onClick={() => handleLoadLevel(2)}
+						onClick={handleSkipLevel}
 					>
-						Help?
+						Skip Level
+					</button>
+					<button
+						className="bg-red-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+						onClick={handleReset}
+					>
+						Reset Level
 					</button>
 				</div>
 				<Editor
