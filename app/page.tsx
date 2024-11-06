@@ -3,42 +3,88 @@ import { Editor } from "@monaco-editor/react";
 import { Key, useEffect, useState } from "react";
 import init, { GameState } from "@/public/wasm/wasm";
 import { jsPython } from "jspython-interpreter";
+import { toast } from "sonner";
 
 const starterCode = `# Write your python code here
 # im not sure I have enough time for a tutorial but heres the documentation
 # get_board() -> returns the current board
-# move_forward() -> moves the player forward
+# move_forward() -> moves the player
 # turn("left" or "right") -> turns the player
-# get_neighbours() -> returns the neighbouring cells`;
+# get_neighbour('north') -> returns the neighbouring cells`;
+
+type QueuedCommand = {
+	type: 'move' | 'turn';
+	direction?: string;
+};
 
 export default function Home() {
 	const [board, setBoard] = useState<GameState>();
 	const [code, setCode] = useState<string>(starterCode);
 	const [isRunning, setIsRunning] = useState(false);
 	const [rerender, setRerender] = useState(0);
-	const [dialoge, setDialoge] = useState<string>('test');
+	const [dialoge, setDialoge] = useState<string>('Take your time to learn the basics of the api; your goal is to collect all the coins in each level');
+	const [level, setLevel] = useState(0);
 
 	useEffect(() => {
 		const initilize = async () => {
 			await init();
-			setBoard(GameState.new(20))
+			setBoard(GameState.new(9))
 		}
 		initilize();
 	}, []);
 
+	const executeQueuedCommands = async (commands: QueuedCommand[]) => {
+		for (const command of commands) {
+			await new Promise(resolve => setTimeout(resolve, 500));
+
+			if (command.type === 'move') {
+				board?.move_forward();
+			} else if (command.type === 'turn') {
+				board?.turn(command.direction || '');
+			}
+
+			setRerender(prev => prev + 1);
+		}
+
+		const coinCount = board?.get_coin_count();
+		if (coinCount === 0) {
+			toast.success('You have won the game');
+			handleLoadLevel(level + 1);
+			setLevel(level + 1);
+		}
+		setIsRunning(false);
+	};
+
 	const handleRunCode = () => {
 		if (isRunning) return;
 		setIsRunning(true);
+
+		// Local queue to store commands while code is being evaluated
+		const commandQueue: QueuedCommand[] = [];
+
+		// Add move functions to the interpreter
+		const queuedMove = () => {
+			commandQueue.push({ type: 'move' });
+		};
+
+		const queuedTurn = (direction: unknown) => {
+			commandQueue.push({ type: 'turn', direction: direction as string });
+		};
+
 		jsPython()
 			.addFunction('get_board', () => board?.get_board())
-			.addFunction('move_forward', () => board?.move_forward())
-			.addFunction('turn', (direction: unknown) => board?.turn(direction as string))
+			.addFunction('move_forward', queuedMove)
+			.addFunction('turn', queuedTurn)
+			.addFunction('get_neighbour', (direction: unknown) => board?.get_neighbour(direction as string))
 			.addFunction('get_neighbours', () => board?.get_neighbouring_cells())
 			.evaluate(code)
+			.then(() => {
+				// Execute the local queue immediately after code evaluation
+				executeQueuedCommands(commandQueue);
+			})
 			.catch(error => {
 				console.error("Error => ", error);
-			})
-			.finally(() => {
+				toast.error('An error occurred while running the code');
 				setIsRunning(false);
 			});
 	};
@@ -50,7 +96,7 @@ export default function Home() {
 	}
 
 	const calculateCellSize = (boardData: string[][]) => {
-		const BOARD_SIZE = 320; // Fixed board size in pixels
+		const BOARD_SIZE = 320;
 		const maxDimension = Math.max(boardData.length, boardData[0].length);
 		return BOARD_SIZE / maxDimension;
 	};
@@ -60,10 +106,11 @@ export default function Home() {
 			<div className="flex flex-col flex-grow">
 				<div className="flex flex-row gap-2 p-2">
 					<button
-						className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+						className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-400"
 						onClick={handleRunCode}
+						disabled={isRunning}
 					>
-						Run Code
+						{isRunning ? 'Running...' : 'Run Code'}
 					</button>
 					<button
 						className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -95,8 +142,7 @@ export default function Home() {
 														height: `${cellSize}px`
 													}}
 													className={`border transition-colors
-                            ${cell === 'X' ? 'bg-blue-500' : cell === '#' ? 'bg-green-500' : 'bg-white'}
-                          `}
+                          ${cell === 'X' ? 'bg-blue-500' : cell === '#' ? 'bg-green-500' : cell == 'C' ? 'bg-yellow-500' : 'bg-white'}`}
 												/>
 											);
 										})}
