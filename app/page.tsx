@@ -109,7 +109,7 @@ export default function Home() {
 					<div className="w-80 h-80 flex flex-col justify-center items-center bg-white rounded-lg shadow-lg">
 						{board && (
 							<div className="flex flex-col">
-								{board.get_board().map((row, rowIndex) => (
+								{board.get_board().map((row: string[], rowIndex: Key | null | undefined) => (
 									<div key={rowIndex} className="flex">
 										{row.map((cell: string, colIndex: Key) => {
 											const cellSize = calculateCellSize(board.get_board());
