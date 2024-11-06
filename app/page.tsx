@@ -1,7 +1,6 @@
 'use client'
 import { Editor } from "@monaco-editor/react";
 import { Key, useEffect, useState } from "react";
-import init, { GameState } from "@/public/wasm/wasm";
 import { jsPython } from "jspython-interpreter";
 import { toast } from "sonner";
 
@@ -11,9 +10,11 @@ const starterCode = `# Write your python code here
 # move_forward() -> moves the player
 # turn("left" or "right") -> turns the player
 # get_neighbour('north') -> Returns either 'wall', 'coin' or 'space'`;
+let wasmModule: typeof import("@/public/wasm/wasm") | null = null;
 
 export default function Home() {
-	const [board, setBoard] = useState<GameState>();
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const [board, setBoard] = useState<any>();
 	const [code, setCode] = useState<string>(starterCode);
 	const [isRunning, setIsRunning] = useState(false);
 	const [rerender, setRerender] = useState(0);
@@ -22,8 +23,9 @@ export default function Home() {
 
 	useEffect(() => {
 		const initilize = async () => {
-			await init();
-			setBoard(GameState.new(9))
+			wasmModule = await import("@/public/wasm/wasm");
+			await wasmModule.default();
+			setBoard(wasmModule.GameState.new(9));
 		}
 		initilize();
 	}, []);

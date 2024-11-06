@@ -1,27 +1,19 @@
-import type { NextConfig } from "next";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const nextConfig = {
+	webpack: (config: any) => {
+		config.experiments = {
+			...config.experiments,
+			asyncWebAssembly: true,
+			layers: true,
+		};
 
-const nextConfig: NextConfig = {
-	// Other Next.js configurations
-	webpack: (config, { isServer }) => {
-		if (!isServer) {
-			config.output.webassemblyModuleFilename = "static/wasm/[modulehash].wasm";
-		}
+		config.output = {
+			...config.output,
+			webassemblyModuleFilename: 'static/wasm/[modulehash].wasm'
+		};
+
 		return config;
 	},
-	async headers() {
-		return [
-			{
-				source: "/wasm/:path*",
-				headers: [
-					{
-						key: "Content-Type",
-						value: "application/wasm",
-					},
-				],
-			},
-		];
-	},
-};
+}
 
-export default nextConfig;
-
+module.exports = nextConfig
