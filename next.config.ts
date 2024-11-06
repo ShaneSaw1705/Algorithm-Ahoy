@@ -1,19 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import path from "path";
 
 /** @type {import('next').NextConfig} */
 const nextConfig: import('next').NextConfig = {
 	webpack: (config: any) => {
+		// Enable WebAssembly
 		config.experiments = {
-			...config.experiments,
 			asyncWebAssembly: true,
+			layers: true,
 		};
 
-		// Important: This allows importing wasm files directly
-		config.resolve.alias = {
-			...config.resolve.alias,
-			'@wasm': path.resolve(__dirname, '/wasm'),
-		};
+		// Remove any existing wasm rules
+		config.module.rules = config.module.rules.filter((rule: any) =>
+			rule.test?.toString() !== '/\\.wasm$/'
+		);
+
+		// Add resource handling for wasm files
+		config.module.rules.push({
+			test: /\.wasm$/,
+			type: 'asset/resource',
+		});
 
 		return config;
 	},

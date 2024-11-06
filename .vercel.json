@@ -1,7 +1,10 @@
 {
-  "build": {
-    "env": {
-      "NEXT_WEBPACK_USEPOLLING": "1"
-    }
-  }
+	"buildCommand": "npm run build",
+	"installCommand": "npm install",
+	"framework": "nextjs",
+	"build": {
+		"env": {
+			"NEXT_WEBPACK_USEPOLLING": "1"
+		}
+	}
 }
