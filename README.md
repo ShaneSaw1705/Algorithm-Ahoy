@@ -61,6 +61,7 @@ This journey will be documented in a **full retrospective** video for YouTube, w
 
 Check out **Algorithm Ahoy** live: [Live Demo](https://algorithm-ahoy.vercel.app/)  
 Or dive into the code on [GitHub](https://github.com/ShaneSaw1705/Algorithm-Ahoy).
+Heres a slightly outdated version of the wasm code becuase I am having trouble with github treating the refactor as a single branch [Wasm](https://github.com/ShaneSaw1705/Algorithm-Ahoy-Rust).
 
 ## 🎯 Goals & Next Steps
 
